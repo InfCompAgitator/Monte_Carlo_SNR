@@ -16,7 +16,9 @@ def check_if_point_in_polygon(input_poly: list, test_pt: tuple) -> bool:
 
 
 def get_vertices_in_polygon(poly_in, vertices_list):
-    pool = Pool(4)
-    results = list(
-        pool.starmap(check_if_point_in_polygon, zip(repeat(poly_in), vertices_list), chunksize=10))
-    return list(compress(vertices_list, results))
+    # with Pool(1) as p:
+    #     results = list(
+    #         p.starmap(check_if_point_in_polygon, zip(repeat(poly_in), vertices_list), chunksize=100))
+    # return list(compress(vertices_list, results))
+    results = [check_if_point_in_polygon(poly_in, vert) for vert in vertices_list]
+    return vertices_list, results

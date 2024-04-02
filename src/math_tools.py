@@ -135,9 +135,9 @@ def get_elevation_azimuth_antennas(src_x, src_y, src_z, src_rotation, dest_x, de
     a_prime = np.linalg.inv(dest_rotation).dot(-ab)
     # a_prime_xy = a_prime - np.dot(a_prime, dest_rotation.T[2]) * dest_rotation.T[2]
     # dist = np.linalg.norm(ab)
-    elevation_src = np.arccos(b_prime[2]/np.linalg.norm(b_prime))
+    elevation_src = np.arccos(b_prime[2] / np.linalg.norm(b_prime))
     azimuth_src = np.arctan2(b_prime[1], b_prime[0])
-    elevation_dest = np.arccos(a_prime[2]/np.linalg.norm(a_prime))
+    elevation_dest = np.arccos(a_prime[2] / np.linalg.norm(a_prime))
     azimuth_dest = np.arctan2(a_prime[1], a_prime[0])
 
     # elevation_src = np.arccos(np.dot(b_prime, src_rotation.T[2]) / dist)
@@ -161,7 +161,7 @@ def get_azimuth_antennas(src_x, src_y, src_z, src_orientation, dest_x, dest_y, d
 
 def get_azimuth(center_x, center_y, x, y):
     angle = arctan2(y - center_y, x - center_x)
-    bearing = (angle ) % (2 * np.pi)- 2 * np.pi
+    bearing = (angle) % (2 * np.pi) - 2 * np.pi
     return bearing
 
 

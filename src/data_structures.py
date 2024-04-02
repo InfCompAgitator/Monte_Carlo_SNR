@@ -146,7 +146,7 @@ class Coords3d:
         """Update coordinates towards the destination (x,y) with given distance.
             Return True if arrived to destination """
         if self == destination:
-            return True
+            return True, 0
 
         # coord_array = self.np_array()
         # direction = - coord_array + destination.np_array()
@@ -162,11 +162,11 @@ class Coords3d:
         direction = direction / remaining_distance
         if remaining_distance <= distance:
             self.set(destination)
-            return True
+            return True, distance - remaining_distance
         else:
             self.set(self + direction * distance)
             # self.set(coord_array)
-            return False
+            return False, 0
 
     def update_coords_from_array(self, np_array):
         self.x = np_array[0]

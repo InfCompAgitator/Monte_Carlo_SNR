@@ -7,25 +7,8 @@ from matplotlib.patches import Rectangle, Polygon
 import numpy as np
 from src.data_structures import Obstacle
 from src.math_tools import line_point_angle, get_mid_azimuth
-from src.parameters import EXTEND_TIMES_FOUR, BOUNDARY_MARGIN
 from itertools import chain as iter_chain
-
-obstacles_madrid_list = [[9, 423, 129, 543, 52.5],
-                         [9, 285, 129, 405, 49],
-                         [9, 147, 129, 267, 42],
-                         [9, 9, 129, 129, 45.5],
-                         [147, 423, 267, 543, 31.5],
-                         [147, 147, 267, 267, 52.5],
-                         [147, 9, 267, 129, 28],
-                         [297, 423, 327, 543, 31.5],
-                         [297, 285, 327, 405, 45.5],
-                         [297, 147, 327, 267, 38.5],
-                         [297, 9, 327, 129, 42],
-                         [348, 423, 378, 543, 45.5],
-                         [348, 285, 378, 405, 49],
-                         [348, 147, 378, 267, 38.5],
-                         [348, 9, 378, 129, 42]]
-
+from src.parameters import BOUNDARY_MARGIN
 
 class Obstacles(object):
     obstaclesList = []
@@ -88,7 +71,7 @@ class Obstacles(object):
                 polys = []
                 for obstacle in self.obstaclesList:
                     vert_array = np.array(obstacle.vertices)
-                    polys.append(Polygon(vert_array, color=fill_color) )
+                    polys.append(Polygon(vert_array, color=fill_color, linewidth=0.00000001))
                 return polys
             else:
                 rects = []
@@ -167,42 +150,40 @@ class ObstaclesPlotter:
         ax.legend(flip(handles, 2), flip(labels, 2), loc='upper left', ncol=2)
 
 
-def get_madrid_buildings():
-    new_obstacles = obstacles_madrid_list.copy()
-    if EXTEND_TIMES_FOUR:
-        x_shift_step = 400  # Total dimensions for Madrid Grid is 387 m (east-west) and 552 m (south north).  The
-        # building height is uniformly distributed between 8 and 15 floors with 3.5 m per floor
-        y_shift_step = 570
-        for x_steps in range(0, 3):
-            for y_steps in range(0, 3):
-                extension = []
-                for _bldg in obstacles_madrid_list:
-                    extension.append([_bldg[0] + x_steps * x_shift_step, _bldg[1] + y_steps * y_shift_step,
-                                      _bldg[2] + x_steps * x_shift_step, _bldg[3] + y_steps * y_shift_step, _bldg[4]])
-                # for _bldg in obstacles_madrid_list:
-                #     extension.append([_bldg[0], _bldg[1] + y_steps * y_shift_step,
-                #                       _bldg[2], _bldg[3] + y_steps * y_shift_step, _bldg[4]])
-                # for _bldg in obstacles_madrid_list:
-                #     extension.append([_bldg[0] + x_steps * x_shift_step,
-                #                       _bldg[1] + y_steps * y_shift_step, _bldg[2] + x_steps * x_shift_step,
-                #                       _bldg[3] + y_steps * y_shift_step, _bldg[4]])
-                new_obstacles += extension
+# def get_madrid_buildings():
+#     new_obstacles = obstacles_madrid_list.copy()
+#     if EXTEND_TIMES_FOUR:
+#         x_shift_step = 400  # Total dimensions for Madrid Grid is 387 m (east-west) and 552 m (south north).  The
+#         # building height is uniformly distributed between 8 and 15 floors with 3.5 m per floor
+#         y_shift_step = 570
+#         for x_steps in range(0, 3):
+#             for y_steps in range(0, 3):
+#                 extension = []
+#                 for _bldg in obstacles_madrid_list:
+#                     extension.append([_bldg[0] + x_steps * x_shift_step, _bldg[1] + y_steps * y_shift_step,
+#                                       _bldg[2] + x_steps * x_shift_step, _bldg[3] + y_steps * y_shift_step, _bldg[4]])
+#                 # for _bldg in obstacles_madrid_list:
+#                 #     extension.append([_bldg[0], _bldg[1] + y_steps * y_shift_step,
+#                 #                       _bldg[2], _bldg[3] + y_steps * y_shift_step, _bldg[4]])
+#                 # for _bldg in obstacles_madrid_list:
+#                 #     extension.append([_bldg[0] + x_steps * x_shift_step,
+#                 #                       _bldg[1] + y_steps * y_shift_step, _bldg[2] + x_steps * x_shift_step,
+#                 #                       _bldg[3] + y_steps * y_shift_step, _bldg[4]])
+#                 new_obstacles += extension
+#
+#     return Obstacles(new_obstacles)
 
-    return Obstacles(new_obstacles)
 
-
-def get_poznan_buildings():
-    _obs_x = np.load('C:\\Users\\user\\PycharmProjects\\ris_project\\src\\environment\\xs.npy', allow_pickle=True)
-    _obs_y = np.load('C:\\Users\\user\\PycharmProjects\\ris_project\\src\\environment\\ys.npy', allow_pickle=True)
+def get_bologna_buildings():
+    _obs_x = np.load(os.getcwd()+'\\xs.npy', allow_pickle=True)
+    _obs_y = np.load(os.getcwd()+'\\ys.npy', allow_pickle=True)
     obs_obj = Obstacles(zip(_obs_x, _obs_y), 'coordinates')
-    obs_obj.crop([100, 1200],[400, 1500])
+    # obs_obj.crop([100, 1200],[400, 1500])
     return obs_obj
 
 
 if __name__ == '__main__':
-    # _obs_x = np.load(os.getcwd() + '\\xs.npy', allow_pickle=True)
-    # _obs_y = np.load(os.getcwd() + '\\ys.npy', allow_pickle=True)
-    obs_obj = get_poznan_buildings() # Obstacles(zip(_obs_x, _obs_y), 'coordinates')
+    obs_obj = get_bologna_buildings()
     # obs_obj = get_madrid_buildings()
     # obs_obj.crop([100, 1200],[400, 1500])
     _rects = obs_obj.plot_obstacles(True, 'gray', True)
@@ -242,7 +223,7 @@ if __name__ == '__main__':
     plt.xlim([bds[0][0], bds[0][1]])
 
     plt.show()
-    # # plt.savefig('plots/madrid_modified_plus_stations.eps', format='eps')
+    # plt.savefig('bologna.eps', format='eps')
 
 # _obs = obs_obj.obstaclesList[10]
 # n_vertices = len(_obs.vertices)
