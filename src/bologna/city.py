@@ -35,6 +35,7 @@ class Footprint:
         self.end_coords = end_coords
         self.side_coords = None
         self.bf_gain = None
+        self.serving_dbs_loc = None
 
 
 class City:
@@ -199,6 +200,13 @@ class City:
                     self.footprints_centers.append(new_fp)
                     street.fps.append(new_fp)
                 prev_fp = new_fp
+
+        for idx, street in enumerate(self.street_graph.streets):
+            n_fps = len(street.fps)
+            street.dist_to_fp_start = np.zeros(n_fps)
+            for fp_idx, _fp in enumerate(street.fps):
+                street.dist_to_fp_start[idx] = _fp.start_coords.get_distance_to(street.start_node_coords)
+
 
     def build_visibility_graph(self, save=False, load=True):
         # TODO: Harder load from file

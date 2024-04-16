@@ -11,6 +11,8 @@ import heapq
 import sympy
 from pickle import HIGHEST_PROTOCOL
 import multiprocessing
+import bisect
+
 
 JSON_NODES_PROBS_FILE = 'nodes_out.json'
 JSON_ENTRY_DENSITIES_FILE = 'entry_densities.json'
@@ -39,6 +41,8 @@ class Street:
         self.fps = []
         self.vehicles = []
         self.one_arrived = False
+        self.n_vs = 0
+        self.dist_to_fp_start = None
 
     def generate_arrival_times(self, t_end=SMALL_CYCLE_T):
         self.arrival_times[:] = -1
@@ -66,19 +70,25 @@ class Street:
         return new_vehicle
 
     def update_vehicles_street(self, small_t, t_step):
+        n_vs_satisfied_snr = 0
         while small_t >= self.arrival_times[self.arrival_t_idx]:
             new_t = self.arrival_times[self.arrival_t_idx]
             assert new_t > 0
             self.arrival_times[self.arrival_t_idx] = -1
             self.arrival_t_idx += 1
             self.vehicles.append(self.generate_vehicle(new_t, small_t))
+            self.n_vs += 1
 
         for idx in reversed(range(len(self.vehicles))):
             vehicle = self.vehicles[idx]
+            if not vehicle.update_coords(t_step):
+                dist_from_start = vehicle.coords.get_distance_to(self.start_node_coords)
+                vehicle.fp_idx = bisect.bisect_left(self.dist_to_fp_start, dist_from_start)
             if not vehicle.in_simulation:
                 vehicle.in_simulation = False
                 self.vehicles.pop(idx)
                 self.one_arrived = True
+                self.n_vs -= 1
                 del vehicle
 
 
@@ -134,9 +144,9 @@ class StreetGraph:
         #     vehicle.coords.x = new_vs_attr[idx][0][0]
         #     vehicle.coords.y = new_vs_attr[idx][0][1]
         #     vehicle.in_simulation = new_vs_attr[idx][1]
-
-        for idx, vehicle in enumerate(self.vehicles):
-            update_vehicle(vehicle, t_step)
+        #
+        # for idx, vehicle in enumerate(self.vehicles):
+        #     update_vehicle(vehicle, t_step)
 
     def populate_streets(self):
         for start, end in self.graph.edges():
@@ -165,9 +175,9 @@ def update_vehicle_queue(queue):
         update_vehicle(task[0], task[1])
 
 
-def update_vehicle(vehicle, t_step):
-    vehicle.update_coords(t_step)
-    return vehicle.coords.as_2d_array(), vehicle.in_simulation
+# def update_vehicle(vehicle, t_step):
+#     vehicle.update_coords(t_step)
+#     return vehicle.coords.as_2d_array(), vehicle.in_simulation
 
 
 class Vehicle:
@@ -185,6 +195,7 @@ class Vehicle:
         self.current_node = init_node
         self.dest_node = dest_node
         self.first_time = False
+        self.fp_idx = None
 
     def update_coords(self, t_step):
         distance = t_step * self.speed + self.extra_dist
